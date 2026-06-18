@@ -56,6 +56,6 @@ Track rho in both finite and inf horizons.
 
 ```text
 # from the print info: inf V(k) is much larger (no scaling)
-# It computes fast if terminal_css_constraint = False
-# Much slower if terminal_css_constraint = True, even as loose as delta=0
+# It computes fast if stability_constraint = False
+# Much slower if stability_constraint = True, even as loose as delta=0
 ```
