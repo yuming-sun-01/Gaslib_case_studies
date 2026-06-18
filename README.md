@@ -15,7 +15,7 @@ m_steady.compressor_beta['compressorStation_3', 0].fix(1.05)
 
 In `model.py`:
 
-Add collocation for `pipe_mass_balance` at line 500: choose `rho` as differentiate variables.
+Add collocation for `pipe_mass_balance`: choose `rho` as differentiate variables.
 
 ## Time transformation and discretization settings
 
