@@ -16,13 +16,16 @@ def _report_solution(m_dyn):
 
     if hasattr(ib, 'terminal_error_constraint'):
         phase_info = getattr(m_dyn, '_phase_info', {})
-        css_rho0 = phase_info.get('terminal_css_rho0', {})
+        # NOTE: terminal_css_rho0 actually holds the CSS *interm_p* targets
+        # (loaded from the "interm_p" sheet); the terminal constraint compares
+        # ib.interm_p[:, :, tau=1] to them, so report interm_p (not pipe_rho).
+        css_interm_p0 = phase_info.get('terminal_css_rho0', {})
         t_last = sorted(ib.time)[-1]
         max_err = max(
-            abs(pyo.value(ib.pipe_rho[p, vol, t_last]) - target)
-            for (p, vol), target in css_rho0.items()
+            abs(pyo.value(ib.interm_p[p, vol, t_last]) - target)
+            for (p, vol), target in css_interm_p0.items()
         )
-        print(f"endpoint max |pipe_rho - CSS| = {max_err:.6e}")
+        print(f"endpoint max |interm_p - CSS| = {max_err:.6e}")
 
 
 def _inf_df(var, idx_iter, time_list, label_fmt):

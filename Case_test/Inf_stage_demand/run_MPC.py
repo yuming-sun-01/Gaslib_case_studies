@@ -679,7 +679,9 @@ def run_nmpc(simulation_steps=None, sample_time=None, opts=None):
         _refresh_tail_wcons_reference(m_controller, sim_t0=sim_t0)
         # Re-initialize the infinite-tail variables (warm start) to the rolled
         # CSS. Skip step 0: its tail is already at the freshly-solved optimum.
-        if i > 0:
+        # Gated by opts.reinit_inf_tail: when off, keep the previous solved tail
+        # (feasible warm start) instead of re-sampling CSS.
+        if i > 0 and getattr(opts, 'reinit_inf_tail', True):
             _reinit_infinite_tail_from_css(m_controller, sim_t0=sim_t0)
 
         # Step 0 has no previous value, so the descent is deactivated there

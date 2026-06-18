@@ -24,7 +24,7 @@ class Options:
     T_period = 6.0
 
     # Lyapunov stability constraint on interm_p. delta: descent margin.
-    stability_constraint = False
+    stability_constraint = True
     delta = 0.1
 
     use_tau_one_for_terminal_cost = True
@@ -41,6 +41,12 @@ class Options:
 
     plant_horizon = 24
     sample_time   = 1.0
+
+    # Warm start for step>=1: if False, keep the previous solved infinite tail
+    # (feasible, only ~1 sample stale) instead of re-sampling CSS into the
+    # tau-space tail variables (algebraically inconsistent / jagged near tau=1,
+    # which tends to slow the transient solves).
+    reinit_inf_tail = False
 
     uncertainty = None
 
