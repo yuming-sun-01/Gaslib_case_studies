@@ -45,7 +45,7 @@ def plot_demand_profile(inputData, out_file="plot_demand.pdf"):
     ax.plot(t, dyn, 'b-', linewidth=2.0)
     ax.set_xlabel("Time (hrs)", fontsize=16)
     ax.set_ylabel("Demand (kg/s)", fontsize=16)
-    ax.set_title("Cyclic Demand", fontsize=18)
+    # ax.set_title("Cyclic Demand", fontsize=18)
     ax.set_xlim(0, T_MAX)
     margin = (dyn.max() - dyn.min()) * 0.1
     ax.set_ylim(dyn.min() - margin, dyn.max() + margin)
@@ -54,7 +54,10 @@ def plot_demand_profile(inputData, out_file="plot_demand.pdf"):
 
     out_path = os.path.join(BASE_DIR, out_file)
     plt.savefig(out_path, bbox_inches="tight", dpi=150)
+    png_path = out_path.replace('.pdf', '.png')
+    plt.savefig(png_path, bbox_inches="tight", dpi=150)
     print(f"Saved {out_path}")
+    print(f"Saved {png_path}")
     print(f"  Sink: {sink_name}, ss={ss_demand:.4f} kg/s, "
           f"range=[{dyn.min():.4f}, {dyn.max():.4f}]")
 

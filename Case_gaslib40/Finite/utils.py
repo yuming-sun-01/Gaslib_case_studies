@@ -492,6 +492,7 @@ def plot_graph_with_layout(G, node_labels=False, edge_labels = False):
     plt.axis("off")
 
     plt.savefig("gaslib40_schematic.pdf")
+    plt.savefig("gaslib40_schematic.png")
     return 
 
 def get_label_positions(layout, labels):

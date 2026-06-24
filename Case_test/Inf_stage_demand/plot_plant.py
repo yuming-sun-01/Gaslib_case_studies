@@ -82,7 +82,10 @@ def plot_compressor_P():
 
     out = os.path.join(OUT_DIR, "plot_plant_P.pdf")
     plt.savefig(out, bbox_inches="tight")
+    png_out = out.replace(".pdf", ".png")
+    plt.savefig(png_out, bbox_inches="tight")
     print(f"[plot_plant] saved {out}")
+    print(f"[plot_plant] saved {png_out}")
 
 
 def _pipe_key(col):
@@ -126,7 +129,10 @@ def plot_interm_p():
 
     out = os.path.join(OUT_DIR, "plot_plant_interm_p.pdf")
     plt.savefig(out, bbox_inches="tight")
+    png_out = out.replace(".pdf", ".png")
+    plt.savefig(png_out, bbox_inches="tight")
     print(f"[plot_plant] saved {out}")
+    print(f"[plot_plant] saved {png_out}")
 
 
 def plot_sources():
@@ -162,7 +168,10 @@ def plot_sources():
 
     out = os.path.join(OUT_DIR, "plot_plant_sources.pdf")
     plt.savefig(out, bbox_inches="tight")
+    png_out = out.replace(".pdf", ".png")
+    plt.savefig(png_out, bbox_inches="tight")
     print(f"[plot_plant] saved {out}")
+    print(f"[plot_plant] saved {png_out}")
 
 
 def main():

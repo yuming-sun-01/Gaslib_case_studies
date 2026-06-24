@@ -10,7 +10,7 @@ import os
 import time
 import pyomo.environ as pyo
 import pyomo.contrib.mpc as mpc
-from idaes.core.util.model_statistics import degrees_of_freedom
+from idaes.core.util.model_statistics import report_statistics
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -142,30 +142,9 @@ def run_model(horizon = 24, num_time_periods= 1, network_data_path = None, input
 
     if periodic_constraints:
         m_dyn = css_terminal_constraints_each_point(m_dyn, num_time_periods= num_time_periods, horizon=horizon, ocss_file_path = ocss_file_path)
-    print("\n=== Variable counts per component ===")
-    rows_v = []
-    for var in m_dyn.component_objects(pyo.Var, active=True, descend_into=False):
-        n_free  = sum(1 for v in var.values() if not v.is_fixed())
-        n_fixed = sum(1 for v in var.values() if v.is_fixed())
-        rows_v.append((var.name.split('.')[-1], n_free, n_fixed))
-    rows_v.sort(key=lambda x: -(x[1] + x[2]))
-    tot_free = tot_fixed = 0
-    for var_name, nf, nx in rows_v:
-        print(f"  [gasnetwork] {var_name}: free={nf}, fixed={nx}, total={nf+nx}")
-        tot_free += nf; tot_fixed += nx
-    print(f"  --- TOTAL free={tot_free}, fixed={tot_fixed}, all={tot_free+tot_fixed} ---")
-    print(f"DOF: {degrees_of_freedom(m_dyn)}")
-    print("\n=== Constraint counts per component ===")
-    rows_c = []
-    for con in m_dyn.component_objects(pyo.Constraint, active=True, descend_into=False):
-        n = sum(1 for _ in con)
-        rows_c.append((con.name.split('.')[-1], n))
-    rows_c.sort(key=lambda x: -x[1])
-    total_c = 0
-    for con_name, n in rows_c:
-        print(f"  [gasnetwork] {con_name}: {n}")
-        total_c += n
-    print(f"  --- TOTAL active equality+inequality constraints: {total_c} ---\n")
+    # Let IDAES report the model statistics (variables, constraints, DOF)
+    # straight from the model instead of counting components by hand.
+    report_statistics(m_dyn)
 
     if init_output_path is not None:
         write_init_values_to_excel(m_dyn, init_output_path)
@@ -199,8 +178,8 @@ if __name__ == "__main__":
     result_output_path = os.path.join(_BASE_DIR, "optimal_css_72hrs_gaslib40.xlsx")
 
     m_steady, m_dyn, timing = run_model(
-        horizon=72,
-        num_time_periods=3,
+        horizon=240,
+        num_time_periods=10,
         periodic_constraints=True,
         calculating_css=False,
         init_output_path=init_output_path,

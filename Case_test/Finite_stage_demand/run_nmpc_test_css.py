@@ -74,7 +74,7 @@ def make_plant_and_controller_model(ocss_file_path, horizon=24, num_time_periods
     # Initialize plant model by simulation
     ipopt = pyo.SolverFactory('ipopt')
     ipopt.options['linear_solver'] = 'ma57'
-    ipopt.solve(m_plant, tee=False)
+    ipopt.solve(m_plant, tee=True)
 
     return m_controller, m_plant        
 
@@ -139,7 +139,7 @@ def run_nmpc(
     solver = pyo.SolverFactory('ipopt')
     solver.options['tol'] = 1e-4
     solver.options['linear_solver'] = 'ma57'
-    tee = False
+    tee = True
 
     # variables that will be fixed in the plant simulation
     plant_fixed_variables = [m_controller.compressor_P['compressorStation_1', :],
@@ -179,7 +179,7 @@ def run_nmpc(
         print(degrees_of_freedom(m_controller))
         # assert degrees_of_of_freedom(m_controller) == 47 * 6
         timer.start('Solve_controller_model')
-        res = solver.solve(m_controller, tee=False)
+        res = solver.solve(m_controller, tee=True)
         timer.stop('Solve_controller_model')
         try:
             pyo.assert_optimal_termination(res)
@@ -195,7 +195,7 @@ def run_nmpc(
         print(degrees_of_freedom(m_plant))
         assert degrees_of_freedom(m_plant) == 0
         timer.start('Solve_plant_model')
-        res = solver.solve(m_plant, tee=False)
+        res = solver.solve(m_plant, tee=True)
         timer.stop('Solve_plant_model')
         pyo.assert_optimal_termination(res)
 
@@ -301,7 +301,7 @@ if __name__ =="__main__":
                         "pSource": [m_plant.pSource[s, :] for s in m_plant.NodesSources]
                         }
     # _output_path = os.path.join(_BASE_DIR, "test_enmpc_explicit_terminal_each_point_stability_72hrs_10_cycles.xlsx")
-    _output_path = os.path.join(_BASE_DIR, "f_enmpc_cycle_1.xlsx")
+    _output_path = os.path.join(_BASE_DIR, "f_enmpc_cycle_111.xlsx")
     write_data_to_excel(sim_data, m_plant, sheets_keys_dict, _output_path,
                         controller_1_lyapunov=controller_lyapunov_function)
     _append_runtime_sheet(_output_path, iteration_times, _total_runtime)

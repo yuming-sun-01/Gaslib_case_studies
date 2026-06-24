@@ -290,107 +290,6 @@ def _refresh_tail_wcons_reference(m_controller, sim_t0):
           f"to sim_t0={sim_t0:.2f} h")
 
 
-def _reinit_infinite_tail_from_css(m_controller, sim_t0):
-    """Re-initialize the infinite-tail FREE variables to the current-phase CSS.
-
-    The receding-horizon interface only shifts the finite block; the infinite
-    block keeps its previous solution, which goes stale once the endpoint/tail
-    references roll. This resets the inf-tail variable VALUES (warm start only,
-    no structural change) to the CSS profile at the rolling phase per tau:
-        phase(tau)   = (sim_t0 + T_finite + L*atanh(tau)) mod T_period
-        phase(tau=1) = sim_t0 mod T_period
-    Only free variables are touched (fixed pSource / wCons / eta are left alone).
-    """
-    ib = getattr(m_controller, 'inf_block', None)
-    if ib is None:
-        return
-
-    info = m_controller._phase_info
-    T_period = float(info['T_period'])
-    T_finite = float(info['T_finite'])
-    L = float(info['L'])
-    ocss_path = str(info['ocss_file_path'])
-    tau_max = 1.0 - 1e-9
-
-    cache = _css_wb_cache.setdefault(ocss_path, {})
-
-    def _df(sheet):
-        if sheet not in cache:
-            try:
-                cache[sheet] = pd.read_excel(
-                    ocss_path, sheet_name=sheet, index_col=0)
-            except Exception:
-                cache[sheet] = None
-        return cache[sheet]
-
-    def _phase(tau):
-        if abs(float(tau) - 1.0) <= 1e-12:
-            return float(sim_t0) % T_period
-        tau_clip = min(float(tau), tau_max)
-        return (float(sim_t0) + T_finite + L * math.atanh(tau_clip)) % T_period
-
-    # inf.pipe_rho[t0] is pinned to the finite-block end by link_pipe_rho;
-    # overwriting it with CSS would create a large link mismatch in the warm
-    # start during the transient. Leave that one time point untouched.
-    t0_inf = ib.time.first()
-
-    # (inf_block var attribute, CSS sheet name, CSS column attribute name)
-    specs = [
-        ('pipe_rho',        'pipe_rho',         'pipe_rho'),
-        ('interm_p',        'interm_p',         'interm_p'),
-        ('compressor_beta', 'compressor beta',  'compressor_beta'),
-        ('compressor_P',    'compressor power', 'compressor_P'),
-        ('node_p',          'node pressure',    'node_p'),
-        ('interm_w',        'interm_w',         'interm_w'),
-    ]
-
-    n_set = 0
-    for var_attr, sheet, col_attr in specs:
-        var = getattr(ib, var_attr, None)
-        df = _df(sheet)
-        if var is None or df is None:
-            continue
-
-        col_by_norm = {_norm(str(c)): c for c in df.columns}
-        col_cache = {}
-        row_cache = {}
-
-        def _get_col(spatial):
-            if spatial not in col_cache:
-                inner = ",".join(str(s) for s in spatial)
-                col = col_by_norm.get(_norm(f"{col_attr}[{inner},:]"))
-                if col is None:
-                    needed = [_norm(str(s)) for s in spatial]
-                    col = next((c for c in df.columns
-                                if all(k in _norm(c) for k in needed)), None)
-                col_cache[spatial] = col
-            return col_cache[spatial]
-
-        def _closest_row(phase):
-            key = round(phase, 6)
-            if key not in row_cache:
-                row_cache[key] = min(df.index, key=lambda x: abs(float(x) - phase))
-            return row_cache[key]
-
-        for idx in var:
-            v = var[idx]
-            if v.is_fixed():
-                continue
-            idx_t = idx if isinstance(idx, tuple) else (idx,)
-            spatial, tau = idx_t[:-1], idx_t[-1]
-            # Do not touch the link-pinned density at the infinite-block t0.
-            if var_attr == 'pipe_rho' and tau == t0_inf:
-                continue
-            col = _get_col(spatial)
-            if col is None:
-                continue
-            v.set_value(float(df.loc[_closest_row(_phase(tau)), col]))
-            n_set += 1
-
-    print(f"  [tail-init] re-initialized {n_set} inf-tail var values "
-          f"to CSS at sim_t0={sim_t0:.2f} h")
-
-
 # =============================================================================
 # Lyapunov reference: roll the interm_p CSS targets (finite + infinite tail)
 #   phase_fin(t)   = (sim_t0 + t) mod T_period
@@ -677,12 +576,6 @@ def run_nmpc(simulation_steps=None, sample_time=None, opts=None):
         _refresh_terminal_css_reference(m_controller, sim_t0=sim_t0)
         # Roll the infinite-tail CSS demand (wCons) to the current phase.
         _refresh_tail_wcons_reference(m_controller, sim_t0=sim_t0)
-        # Re-initialize the infinite-tail variables (warm start) to the rolled
-        # CSS. Skip step 0: its tail is already at the freshly-solved optimum.
-        # Gated by opts.reinit_inf_tail: when off, keep the previous solved tail
-        # (feasible warm start) instead of re-sampling CSS.
-        if i > 0 and getattr(opts, 'reinit_inf_tail', True):
-            _reinit_infinite_tail_from_css(m_controller, sim_t0=sim_t0)
 
         # Step 0 has no previous value, so the descent is deactivated there
         # (like Finite_stage_demand/stability.py); active from step 1 on.

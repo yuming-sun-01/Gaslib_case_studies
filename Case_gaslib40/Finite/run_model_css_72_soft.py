@@ -11,7 +11,7 @@ import time
 import pandas as pd
 import pyomo.environ as pyo
 import pyomo.contrib.mpc as mpc
-from idaes.core.util.model_statistics import degrees_of_freedom
+from idaes.core.util.model_statistics import report_statistics
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -165,30 +165,9 @@ def run_model(horizon = 24, num_time_periods= 1, network_data_path = None, input
         m_dyn = css_terminal_constraints_final_to_ocss_phase0(
             m_dyn, ocss_file_path=ocss_file_path)
         m_dyn = _apply_terminal_l1_soft_penalty(m_dyn, penalty=1000.0)
-    print("\n=== Variable counts per component ===")
-    rows_v = []
-    for var in m_dyn.component_objects(pyo.Var, active=True, descend_into=False):
-        n_free  = sum(1 for v in var.values() if not v.is_fixed())
-        n_fixed = sum(1 for v in var.values() if v.is_fixed())
-        rows_v.append((var.name.split('.')[-1], n_free, n_fixed))
-    rows_v.sort(key=lambda x: -(x[1] + x[2]))
-    tot_free = tot_fixed = 0
-    for var_name, nf, nx in rows_v:
-        print(f"  [gasnetwork] {var_name}: free={nf}, fixed={nx}, total={nf+nx}")
-        tot_free += nf; tot_fixed += nx
-    print(f"  --- TOTAL free={tot_free}, fixed={tot_fixed}, all={tot_free+tot_fixed} ---")
-    print(f"DOF: {degrees_of_freedom(m_dyn)}")
-    print("\n=== Constraint counts per component ===")
-    rows_c = []
-    for con in m_dyn.component_objects(pyo.Constraint, active=True, descend_into=False):
-        n = sum(1 for _ in con)
-        rows_c.append((con.name.split('.')[-1], n))
-    rows_c.sort(key=lambda x: -x[1])
-    total_c = 0
-    for con_name, n in rows_c:
-        print(f"  [gasnetwork] {con_name}: {n}")
-        total_c += n
-    print(f"  --- TOTAL active equality+inequality constraints: {total_c} ---\n")
+    # Let IDAES report the model statistics (variables, constraints, DOF)
+    # straight from the model instead of counting components by hand.
+    report_statistics(m_dyn)
 
     ipopt.options["tol"] = 1e-5
     ipopt.options["mu_init"] = 1e-6

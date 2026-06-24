@@ -1,0 +1,11 @@
+f_enmpc_cycle_1.xlsx
+    Total cost: 5571.43
+    CPU time:   4.4 s
+
+f_enmpc_cycle_10.xlsx
+    Total cost: 5569.80
+    CPU time:   63.5 s
+
+Inf_enmpc_felement=1.xlsx
+    Total cost: 5569.32
+    CPU time:   26.7 s

@@ -11,7 +11,7 @@ class Options:
     horizon = 6
     num_time_periods = 1
 
-    L = 32
+    L = 10
     scale_obj = 1
 
     nfe_inf = 5
@@ -41,12 +41,6 @@ class Options:
 
     plant_horizon = 24
     sample_time   = 1.0
-
-    # Warm start for step>=1: if False, keep the previous solved infinite tail
-    # (feasible, only ~1 sample stale) instead of re-sampling CSS into the
-    # tau-space tail variables (algebraically inconsistent / jagged near tau=1,
-    # which tends to slow the transient solves).
-    reinit_inf_tail = False
 
     uncertainty = None
 

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 
-HARD_FILE = "final_paper_enmpc_explicit_terminal_each_point_stability_72hrs.xlsx"
+HARD_FILE = "final_paper_enmpc_explicit_terminal_each_point_stability_10_cycles.xlsx"
 SOFT_FILE = "final_paper_enmpc_explicit_terminal_each_point_stability_72hrs_soft.xlsx"
 OCSS_FILE = "optimal_css_24hrs_gaslib40_extended.xlsx"
 

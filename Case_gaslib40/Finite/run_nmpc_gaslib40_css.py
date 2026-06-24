@@ -208,11 +208,11 @@ def run_nmpc(
 
 if __name__ =="__main__":
     _total_start = time.time()
-    m_plant, m_controller, sim_data, controller_lyapunov_function, iteration_times = run_nmpc(simulation_steps = 72,
+    m_plant, m_controller, sim_data, controller_lyapunov_function, iteration_times = run_nmpc(simulation_steps = 144,
                                                sample_time = 1,
-                                               controller_horizon = 72,
+                                               controller_horizon = 240,
                                                plant_horizon = 1,
-                                               num_time_periods=3)
+                                               num_time_periods=10)
     _total_runtime = time.time() - _total_start
     print(f"Total runtime: {_total_runtime:.2f}s", flush=True)
     
@@ -241,7 +241,7 @@ if __name__ =="__main__":
                         "wSource": [m_plant.wSource[s, :] for s in m_plant.NodesSources],
                         "pSource": [m_plant.pSource[s, :] for s in m_plant.NodesSources]
                         }
-    write_data_to_excel(sim_data, m_plant, sheets_keys_dict, "final_paper_enmpc_explicit_terminal_each_point_stability_72hrs.xlsx",
+    write_data_to_excel(sim_data, m_plant, sheets_keys_dict, "final_paper_enmpc_explicit_terminal_each_point_stability_10_cycles_72.xlsx",
                         controller_1_lyapunov=controller_lyapunov_function,
                         iteration_times=iteration_times,
                         total_runtime=_total_runtime)

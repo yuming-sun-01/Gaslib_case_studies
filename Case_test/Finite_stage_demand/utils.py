@@ -500,10 +500,11 @@ def plot_graph_with_layout(G, node_labels=False, edge_labels = False):
                          Line2D([0], [0], color='k', markersize=7, label='$\mathrm{Pipes}$')]
     
     # Add legend to the plot
-    plt.legend(handles=node_legend_items, loc='upper right')
+    plt.legend(handles=node_legend_items, loc='lower left')
     plt.axis("off")
 
     plt.savefig("gaslib40_schematic.pdf")
+    plt.savefig("gaslib40_schematic.png")
     return 
 
 def get_label_positions(layout, labels):
